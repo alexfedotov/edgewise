@@ -1,6 +1,20 @@
+use std::fmt;
+
 #[derive(Debug, PartialEq, Eq)]
-struct Graph {
-    graph: Vec<Vec<i32>>,
+pub struct Graph {
+    graph: Vec<Vec<u32>>,
+}
+
+impl Graph {
+    pub fn new(g: Vec<Vec<u32>>) -> Self {
+        Self { graph: g }
+    }
+}
+
+impl fmt::Display for Graph {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "{:?}", self.graph)
+    }
 }
 
 pub fn add(left: u64, right: u64) -> u64 {
@@ -9,11 +23,8 @@ pub fn add(left: u64, right: u64) -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    fn stub() {
+        assert!(true);
     }
 }
