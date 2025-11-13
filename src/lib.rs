@@ -10,9 +10,9 @@ use std::fmt;
 ///
 /// # Examples
 /// ```rust
-/// 
+///
 /// use edgewise::Graph;
-/// 
+///
 /// // Weighted directed graph
 /// let weighted: Graph<u32> = Graph::new(vec![
 ///         vec![(1, 1), (2, 3)], // edges from node 0
