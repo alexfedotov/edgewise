@@ -32,18 +32,16 @@ pub struct Graph<W> {
 }
 
 impl<W> Graph<W> {
+    pub fn new(g: Vec<Vec<(u32, W)>>) -> Self {
+        Self { graph: g }
+    }
+
     // An iterator over the edges of the graph.
     pub fn edges(&self) -> impl Iterator<Item = (u32, u32, &W)> + '_ {
         self.graph.iter().enumerate().flat_map(|(u, v)| {
             let x: u32 = u32::try_from(u).expect("value too larget for u32");
             v.iter().map(move |(y, w)| (x, *y, w))
         })
-    }
-}
-
-impl<W> Graph<W> {
-    pub fn new(g: Vec<Vec<(u32, W)>>) -> Self {
-        Self { graph: g }
     }
 }
 
