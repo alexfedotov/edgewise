@@ -33,13 +33,18 @@ pub struct Graph<W> {
 
 impl<W> Graph<W> {
     pub fn new(g: Vec<Vec<(u32, W)>>) -> Self {
+        let n: usize = g.len();
+        assert!(
+            n <= u32::MAX as usize,
+            "The number of nodes of the graph must fit in u32."
+        );
         Self { graph: g }
     }
 
     // An iterator over the edges of the graph.
     pub fn edges(&self) -> impl Iterator<Item = (u32, u32, &W)> + '_ {
         self.graph.iter().enumerate().flat_map(|(u, v)| {
-            let x: u32 = u32::try_from(u).expect("value too large for u32");
+            let x = u as u32; //safe as the number of nodes is capped by u32 anyway
             v.iter().map(move |(y, w)| (x, *y, w))
         })
     }
