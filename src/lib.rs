@@ -39,9 +39,19 @@ impl<W> Graph<W> {
     // An iterator over the edges of the graph.
     pub fn edges(&self) -> impl Iterator<Item = (u32, u32, &W)> + '_ {
         self.graph.iter().enumerate().flat_map(|(u, v)| {
-            let x: u32 = u32::try_from(u).expect("value too larget for u32");
+            let x: u32 = u32::try_from(u).expect("value too large for u32");
             v.iter().map(move |(y, w)| (x, *y, w))
         })
+    }
+
+    pub fn random_graph(
+        &self,
+        _num_nodes: u32,
+        _probability: f64,
+        _is_directed: Option<bool>,
+        _is_weighted: Option<bool>,
+    ) -> Self {
+        Self::new(vec![])
     }
 }
 
