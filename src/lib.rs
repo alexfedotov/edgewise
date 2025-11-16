@@ -86,14 +86,21 @@ impl<W: Clone> Graph<W> {
 }
 
 trait InsertEdge: Sized {
-    fn insert_edge(
-        &self,
-        graph: &mut Graph<Self>,
-        i: u32,
-        j: u32,
-        is_directed: bool,
-        is_weighted: bool,
-    );
+    fn insert_edge(g: &mut Graph<Self>, i: u32, j: u32, is_directed: bool) -> &mut Graph<Self>;
+}
+
+impl InsertEdge for () {
+    fn insert_edge(g: &mut Graph<()>, i: u32, j: u32, is_directed: bool) -> &mut Graph<()> {
+        if let Some(u) = g.graph.get_mut(i as usize) {
+            u.push((j, ()));
+        }
+        if !is_directed {
+            if let Some(v) = g.graph.get_mut(j as usize) {
+                v.push((i, ()));
+            }
+        }
+        g
+    }
 }
 
 impl fmt::Display for Graph<()> {
