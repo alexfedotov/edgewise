@@ -1,3 +1,4 @@
+use rand::Rng;
 use std::fmt;
 
 /// A graph represented as a vector of vectors, which
@@ -77,13 +78,36 @@ trait InsertEdge: Sized {
 
 impl InsertEdge for () {
     fn insert_edge(g: &mut Graph<()>, i: u32, j: u32, is_directed: bool) -> &mut Graph<()> {
-        if let Some(u) = g.graph.get_mut(i as usize) {
-            u.push((j, ()));
-        }
+        let u = g
+            .graph
+            .get_mut(i as usize)
+            .expect(&format!("Node {i} is out of bounds"));
+        u.push((j, ()));
         if !is_directed {
-            if let Some(v) = g.graph.get_mut(j as usize) {
-                v.push((i, ()));
-            }
+            let v = g
+                .graph
+                .get_mut(j as usize)
+                .expect(&format!("Node {j} is out of bounds"));
+            v.push((i, ()));
+        }
+        g
+    }
+}
+
+impl InsertEdge for u32 {
+    fn insert_edge(g: &mut Graph<u32>, i: u32, j: u32, is_directed: bool) -> &mut Graph<u32> {
+        let w: u32 = rand::thread_rng().gen_range(1..=10);
+        let u = g
+            .graph
+            .get_mut(i as usize)
+            .expect(&format!("Node {i} is out of bounds"));
+        u.push((j, w));
+        if !is_directed {
+            let v = g
+                .graph
+                .get_mut(j as usize)
+                .expect(&format!("Node {j} is out of bounds"));
+            v.push((i, w));
         }
         g
     }
