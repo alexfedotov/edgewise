@@ -1,3 +1,4 @@
+use rand::{Rng, rngs::ThreadRng};
 use std::fmt;
 
 /// A graph represented as a vector of vectors, which
@@ -32,18 +33,109 @@ pub struct Graph<W> {
 }
 
 impl<W> Graph<W> {
+    pub fn new(g: Vec<Vec<(u32, W)>>) -> Self {
+        let n: usize = g.len();
+        assert!(
+            n <= u32::MAX as usize,
+            "The number of nodes of the graph must fit in u32."
+        );
+        Self { graph: g }
+    }
+
     // An iterator over the edges of the graph.
     pub fn edges(&self) -> impl Iterator<Item = (u32, u32, &W)> + '_ {
         self.graph.iter().enumerate().flat_map(|(u, v)| {
-            let x: u32 = u32::try_from(u).expect("value too larget for u32");
+            let x = u as u32; //safe as the number of nodes is capped by u32 anyway
             v.iter().map(move |(y, w)| (x, *y, w))
         })
     }
 }
 
-impl<W> Graph<W> {
-    pub fn new(g: Vec<Vec<(u32, W)>>) -> Self {
-        Self { graph: g }
+#[allow(private_bounds)]
+impl<W: InsertEdge> Graph<W> {
+    fn insert_edge(&mut self, rng: &mut ThreadRng, i: u32, j: u32, is_directed: bool) -> &mut Self {
+        W::insert_edge(self, rng, i, j, is_directed)
+    }
+
+    pub fn random_graph(
+        num_nodes: u32,
+        probability: f64,
+        is_directed: bool,
+        _is_weighted: bool,
+    ) -> Self {
+        let mut v: Vec<Vec<(u32, W)>> = Vec::new();
+        v.resize_with(num_nodes as usize, Vec::new);
+        let mut graph = Graph::new(v);
+        let mut rng = rand::thread_rng();
+        for i in 0..num_nodes {
+            let z = if is_directed { 0 } else { i + 1 };
+            for j in z..num_nodes {
+                let r: f64 = rng.r#gen();
+                if r < probability {
+                    graph.insert_edge(&mut rng, i, j, is_directed);
+                }
+            }
+        }
+        graph
+    }
+}
+
+trait InsertEdge: Sized {
+    fn insert_edge<'a>(
+        g: &'a mut Graph<Self>,
+        rng: &mut ThreadRng,
+        i: u32,
+        j: u32,
+        is_directed: bool,
+    ) -> &'a mut Graph<Self>;
+}
+
+impl InsertEdge for () {
+    fn insert_edge<'a>(
+        g: &'a mut Graph<()>,
+        _rng: &mut ThreadRng,
+        i: u32,
+        j: u32,
+        is_directed: bool,
+    ) -> &'a mut Graph<()> {
+        let u = g
+            .graph
+            .get_mut(i as usize)
+            .expect(&format!("Node {i} is out of bounds"));
+        u.push((j, ()));
+        if !is_directed {
+            let v = g
+                .graph
+                .get_mut(j as usize)
+                .expect(&format!("Node {j} is out of bounds"));
+            v.push((i, ()));
+        }
+        g
+    }
+}
+
+impl InsertEdge for u32 {
+    fn insert_edge<'a>(
+        g: &'a mut Graph<u32>,
+        rng: &mut ThreadRng,
+        i: u32,
+        j: u32,
+        is_directed: bool,
+    ) -> &'a mut Graph<u32> {
+        let w: u32 = rng.gen_range(1..=10);
+        let u = g
+            .graph
+            .get_mut(i as usize)
+            .expect(&format!("Node {i} is out of bounds"));
+        u.push((j, w));
+        if !is_directed {
+            let v = g
+                .graph
+                .get_mut(j as usize)
+                .expect(&format!("Node {j} is out of bounds"));
+            v.push((i, w));
+        }
+        g
     }
 }
 
