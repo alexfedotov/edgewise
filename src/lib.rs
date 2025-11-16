@@ -1,4 +1,4 @@
-use rand::Rng;
+use rand::{Rng, rngs::ThreadRng};
 use std::fmt;
 
 /// A graph represented as a vector of vectors, which
@@ -32,7 +32,7 @@ pub struct Graph<W> {
     graph: Vec<Vec<(u32, W)>>,
 }
 
-impl<W: Clone> Graph<W> {
+impl<W> Graph<W> {
     pub fn new(g: Vec<Vec<(u32, W)>>) -> Self {
         let n: usize = g.len();
         assert!(
@@ -49,23 +49,31 @@ impl<W: Clone> Graph<W> {
             v.iter().map(move |(y, w)| (x, *y, w))
         })
     }
+}
+
+#[allow(private_bounds)]
+impl<W: InsertEdge> Graph<W> {
+    fn insert_edge(&mut self, rng: &mut ThreadRng, i: u32, j: u32, is_directed: bool) -> &mut Self {
+        W::insert_edge(self, rng, i, j, is_directed)
+    }
 
     pub fn random_graph(
         num_nodes: u32,
-        _probability: f64,
+        probability: f64,
         is_directed: bool,
         _is_weighted: bool,
     ) -> Self {
-        let mut v = Vec::new();
-        v.resize(num_nodes as usize, vec![] as Vec<(u32, W)>);
+        let mut v: Vec<Vec<(u32, W)>> = Vec::new();
+        v.resize_with(num_nodes as usize, Vec::new);
         let mut graph = Graph::new(v);
-        for i in 0..(num_nodes - 1) {
+        let mut rng = rand::thread_rng();
+        for i in 0..num_nodes {
             let z = if is_directed { 0 } else { i + 1 };
-            for _j in z..(num_nodes - 1) {
-                // I need a helper that takes is_directed and is_weighted
-                // if is_directed, only i -> j is inserted
-                // otherwise both i -> j and j -> i
-                // is_weighted should be also taken into account.
+            for j in z..num_nodes {
+                let r: f64 = rng.r#gen();
+                if r < probability {
+                    graph.insert_edge(&mut rng, i, j, is_directed);
+                }
             }
         }
         graph
@@ -73,11 +81,23 @@ impl<W: Clone> Graph<W> {
 }
 
 trait InsertEdge: Sized {
-    fn insert_edge(g: &mut Graph<Self>, i: u32, j: u32, is_directed: bool) -> &mut Graph<Self>;
+    fn insert_edge<'a>(
+        g: &'a mut Graph<Self>,
+        rng: &mut ThreadRng,
+        i: u32,
+        j: u32,
+        is_directed: bool,
+    ) -> &'a mut Graph<Self>;
 }
 
 impl InsertEdge for () {
-    fn insert_edge(g: &mut Graph<()>, i: u32, j: u32, is_directed: bool) -> &mut Graph<()> {
+    fn insert_edge<'a>(
+        g: &'a mut Graph<()>,
+        _rng: &mut ThreadRng,
+        i: u32,
+        j: u32,
+        is_directed: bool,
+    ) -> &'a mut Graph<()> {
         let u = g
             .graph
             .get_mut(i as usize)
@@ -95,8 +115,14 @@ impl InsertEdge for () {
 }
 
 impl InsertEdge for u32 {
-    fn insert_edge(g: &mut Graph<u32>, i: u32, j: u32, is_directed: bool) -> &mut Graph<u32> {
-        let w: u32 = rand::thread_rng().gen_range(1..=10);
+    fn insert_edge<'a>(
+        g: &'a mut Graph<u32>,
+        rng: &mut ThreadRng,
+        i: u32,
+        j: u32,
+        is_directed: bool,
+    ) -> &'a mut Graph<u32> {
+        let w: u32 = rng.gen_range(1..=10);
         let u = g
             .graph
             .get_mut(i as usize)
