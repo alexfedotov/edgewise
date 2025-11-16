@@ -31,7 +31,7 @@ pub struct Graph<W> {
     graph: Vec<Vec<(u32, W)>>,
 }
 
-impl<W> Graph<W> {
+impl<W: Clone> Graph<W> {
     pub fn new(g: Vec<Vec<(u32, W)>>) -> Self {
         let n: usize = g.len();
         assert!(
@@ -55,6 +55,9 @@ impl<W> Graph<W> {
         is_directed: bool,
         _is_weighted: bool,
     ) -> Self {
+        let mut v = Vec::new();
+        v.resize(num_nodes as usize, vec![] as Vec<(u32, W)>);
+        let mut graph = Graph::new(v);
         for i in 0..(num_nodes - 1) {
             let z = if is_directed { 0 } else { i + 1 };
             for _j in z..(num_nodes - 1) {
@@ -64,8 +67,33 @@ impl<W> Graph<W> {
                 // is_weighted should be also taken into account.
             }
         }
-        Self::new(vec![]) // a stub to suppress type checker from complaining
+        graph
     }
+
+    // fn insert_edge(&mut self, i: u32, j: u32, is_directed: bool, is_weighted: bool) -> Self {
+    //     if is_directed {
+    //         let mut u = self.graph.get(i as usize);
+    //         if let Some(mut x) = u {
+    //             x.push((j, 0));
+    //         } else {
+
+    //         }
+    //         Self::new(vec![])
+    //     } else {
+    //         Self::new(vec![])
+    //     }
+    // }
+}
+
+trait InsertEdge: Sized {
+    fn insert_edge(
+        &self,
+        graph: &mut Graph<Self>,
+        i: u32,
+        j: u32,
+        is_directed: bool,
+        is_weighted: bool,
+    );
 }
 
 impl fmt::Display for Graph<()> {
