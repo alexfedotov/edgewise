@@ -50,13 +50,21 @@ impl<W> Graph<W> {
     }
 
     pub fn random_graph(
-        &self,
-        _num_nodes: u32,
+        num_nodes: u32,
         _probability: f64,
-        _is_directed: Option<bool>,
-        _is_weighted: Option<bool>,
+        is_directed: bool,
+        _is_weighted: bool,
     ) -> Self {
-        Self::new(vec![])
+        for i in 0..(num_nodes - 1) {
+            let z = if is_directed { 0 } else { i + 1 };
+            for _j in z..(num_nodes - 1) {
+                // I need a helper that takes is_directed and is_weighted
+                // if is_directed, only i -> j is inserted
+                // otherwise both i -> j and j -> i
+                // is_weighted should be also taken into account.
+            }
+        }
+        Self::new(vec![]) // a stub to suppress type checker from complaining
     }
 }
 
