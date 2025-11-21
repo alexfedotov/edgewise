@@ -49,6 +49,21 @@ impl<W> Graph<W> {
             v.iter().map(move |(y, w)| (x, *y, w))
         })
     }
+
+    pub fn bfs(&self) -> Vec<u32> {
+        // Create an empty queue
+        // Create an empty set visited
+        // Add start to the queue
+        // Add start to visited
+        // While the queue is not empty:
+        //     Remove the front element and call it u
+        //     For each neighbor v of u in the graph:
+        //         If v is not in visited:
+        //             Add v to visited
+        //             Enqueue v
+        // Return visited (these are all reachable nodes)
+        vec![42]
+    }
 }
 
 #[allow(private_bounds)]
