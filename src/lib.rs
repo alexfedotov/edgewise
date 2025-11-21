@@ -164,8 +164,11 @@ mod tests {
     use super::*;
 
     #[test]
-    fn random_gen_non_empty() {
+    fn random_gen_weights_gr_zero() {
         let g: Graph<u32> = Graph::random_graph(10, 0.5, true, true);
-        assert!(!g.graph.is_empty());
+        for e in g.edges() {
+            let (_, _, w) = e;
+            assert!(*w > 0)
+        }
     }
 }
