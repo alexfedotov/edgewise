@@ -161,8 +161,31 @@ impl fmt::Display for Graph<u32> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
-    fn stub() {
-        assert!(true);
+    fn random_gen_weights_gr_zero() {
+        let g: Graph<u32> = Graph::random_graph(10, 0.5, true, true);
+        for (_, _, w) in g.edges() {
+            assert!(*w > 0)
+        }
+    }
+
+    #[test]
+    fn random_gen_undirected_weigh_simmetry() {
+        let g: Graph<u32> = Graph::random_graph(10, 0.5, false, true);
+        let edges: Vec<_> = g.edges().collect();
+        for &(u, v, w) in &edges {
+            if let Some(&(_, _, w1)) = edges.iter().find(|&&(u1, v1, _)| u1 == v && v1 == u) {
+                assert!(
+                    w == w1,
+                    "Symmetric edges {u}-({w})->{v} and {v}-({w1})->{u} have non-symmetric weights."
+                )
+            } else {
+                panic!(
+                    "Unable to find symmetric edge {v}-(w)->{u} for {u}-(w)->{v} in an undirected graph."
+                );
+            }
+        }
     }
 }
