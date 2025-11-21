@@ -161,8 +161,11 @@ impl fmt::Display for Graph<u32> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
-    fn stub() {
-        assert!(true);
+    fn random_gen_non_empty() {
+        let g: Graph<u32> = Graph::random_graph(10, 0.5, true, true);
+        assert!(!g.graph.is_empty());
     }
 }
