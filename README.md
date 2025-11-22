@@ -1,2 +1,1 @@
-**`edgewise`** is a lightweight Rust 🦀 library for exploring graphs — from traversal to pathfinding.
-It implements Dijkstra, BFS, and DFS, along with utilities for creating and experimenting with random graphs.
+**`edgewise`** is a lightweight Rust 🦀 library for working with graphs. It currently implements Dijkstra, BFS, and DFS, along with machinery for creating random graphs.
