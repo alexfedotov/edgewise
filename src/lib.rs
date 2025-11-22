@@ -51,11 +51,11 @@ impl<W> Graph<W> {
         })
     }
 
-    pub fn bfs(&self) -> Vec<u32> {
+    pub fn bfs(&self, starting_node: u32) -> Vec<u32> {
         let mut nodes_left_to_process: VecDeque<u32> = VecDeque::new();
         let mut nodes_visited: HashSet<u32> = HashSet::new();
-        nodes_left_to_process.push_back(0);
-        nodes_visited.insert(0);
+        nodes_left_to_process.push_back(starting_node);
+        nodes_visited.insert(starting_node);
         while !nodes_left_to_process.is_empty() {
             if let Some(node_to_process) = nodes_left_to_process.pop_front() {
                 if let Some(neighbours_of_node) = self.graph.get(node_to_process as usize) {
@@ -220,9 +220,13 @@ mod tests {
             vec![(3, ())],
             vec![(0, ())],
         ]);
-        let mut bfs_result = g.bfs().clone();
-        bfs_result.sort();
-        let bfs_expected_result = vec![0, 1, 2, 5];
-        assert_eq!(bfs_result, bfs_expected_result);
+        let mut bfs_result_start_from_0 = g.bfs(0).clone();
+        bfs_result_start_from_0.sort();
+        let bfs_expected_result_start_from_0 = vec![0, 1, 2, 5];
+        assert_eq!(bfs_result_start_from_0, bfs_expected_result_start_from_0);
+        let mut bfs_result_start_from_4 = g.bfs(4).clone();
+        bfs_result_start_from_4.sort();
+        let bfs_expected_result_start_from_4 = vec![3, 4];
+        assert_eq!(bfs_result_start_from_4, bfs_expected_result_start_from_4);
     }
 }
