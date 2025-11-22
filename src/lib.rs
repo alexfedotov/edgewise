@@ -1,5 +1,5 @@
 use rand::{Rng, rngs::ThreadRng};
-use std::collections::{HashSet, VecDeque};
+use std::collections::VecDeque;
 use std::fmt;
 
 /// A graph represented as a vector of vectors, which
@@ -53,36 +53,42 @@ impl<W> Graph<W> {
 
     pub fn bfs(&self, starting_node: u32) -> Vec<u32> {
         let mut nodes_left_to_process: VecDeque<u32> = VecDeque::new();
-        let mut nodes_visited: HashSet<u32> = HashSet::new();
+        let mut nodes_visited_lookup: Vec<bool> = vec![false; self.graph.len()];
+        let mut nodes_visited: Vec<u32> = Vec::new();
         nodes_left_to_process.push_back(starting_node);
-        nodes_visited.insert(starting_node);
+        nodes_visited_lookup[starting_node as usize] = true;
+        nodes_visited.push(starting_node);
         while !nodes_left_to_process.is_empty() {
             if let Some(node_to_process) = nodes_left_to_process.pop_front() {
                 if let Some(neighbours_of_node) = self.graph.get(node_to_process as usize) {
                     for &(n, _) in neighbours_of_node {
-                        if !nodes_visited.contains(&n) {
-                            nodes_visited.insert(n);
+                        if !nodes_visited_lookup[n as usize] {
+                            nodes_visited_lookup[n as usize] = true;
+                            nodes_visited.push(n);
                             nodes_left_to_process.push_back(n);
                         }
                     }
                 }
             }
         }
-        nodes_visited.into_iter().collect()
+        nodes_visited
     }
 
     pub fn dfs(&self, starting_node: u32) -> Vec<u32> {
         let mut nodes_left_to_process: VecDeque<u32> = VecDeque::new();
-        let mut nodes_visited: HashSet<u32> = HashSet::new();
+        let mut nodes_visited_lookup: Vec<bool> = vec![false; self.graph.len()];
+        let mut nodes_visited: Vec<u32> = Vec::new();
         nodes_left_to_process.push_back(starting_node);
-        nodes_visited.insert(starting_node);
+        nodes_visited_lookup[starting_node as usize] = true;
+        nodes_visited.push(starting_node);
         while !nodes_left_to_process.is_empty() {
             let mut found_unvisited = false;
             if let Some(&node_to_process) = nodes_left_to_process.back() {
                 if let Some(neighbours_of_node) = self.graph.get(node_to_process as usize) {
                     for &(n, _) in neighbours_of_node {
-                        if !nodes_visited.contains(&n) {
-                            nodes_visited.insert(n);
+                        if !nodes_visited_lookup[n as usize] {
+                            nodes_visited_lookup[n as usize] = true;
+                            nodes_visited.push(n);
                             nodes_left_to_process.push_back(n);
                             found_unvisited = true;
                             break;
@@ -94,7 +100,7 @@ impl<W> Graph<W> {
                 }
             }
         }
-        nodes_visited.into_iter().collect()
+        nodes_visited
     }
 }
 
@@ -209,6 +215,18 @@ impl fmt::Display for Graph<u32> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use once_cell::sync::Lazy;
+
+    static TEST_GRAPH: Lazy<Graph<()>> = Lazy::new(|| {
+        Graph::new(vec![
+            vec![(1, ()), (2, ()), (5, ())],
+            vec![(0, ()), (5, ())],
+            vec![(0, ())],
+            vec![(4, ())],
+            vec![(3, ())],
+            vec![(0, ())],
+        ])
+    });
 
     #[test]
     fn random_gen_weights_gr_zero() {
@@ -238,19 +256,11 @@ mod tests {
 
     #[test]
     fn basic_bfs_test() {
-        let g: Graph<()> = Graph::new(vec![
-            vec![(1, ()), (2, ()), (5, ())],
-            vec![(0, ()), (5, ())],
-            vec![(0, ())],
-            vec![(4, ())],
-            vec![(3, ())],
-            vec![(0, ())],
-        ]);
-        let mut bfs_result_start_from_0 = g.bfs(0).clone();
+        let mut bfs_result_start_from_0 = TEST_GRAPH.bfs(0).clone();
         bfs_result_start_from_0.sort();
         let bfs_expected_result_start_from_0 = vec![0, 1, 2, 5];
         assert_eq!(bfs_result_start_from_0, bfs_expected_result_start_from_0);
-        let mut bfs_result_start_from_4 = g.bfs(4).clone();
+        let mut bfs_result_start_from_4 = TEST_GRAPH.bfs(4).clone();
         bfs_result_start_from_4.sort();
         let bfs_expected_result_start_from_4 = vec![3, 4];
         assert_eq!(bfs_result_start_from_4, bfs_expected_result_start_from_4);
@@ -258,19 +268,11 @@ mod tests {
 
     #[test]
     fn basic_dfs_test() {
-        let g: Graph<()> = Graph::new(vec![
-            vec![(1, ()), (2, ()), (5, ())],
-            vec![(0, ()), (5, ())],
-            vec![(0, ())],
-            vec![(4, ())],
-            vec![(3, ())],
-            vec![(0, ())],
-        ]);
-        let mut dfs_result_start_from_0 = g.dfs(0).clone();
+        let mut dfs_result_start_from_0 = TEST_GRAPH.dfs(0).clone();
         dfs_result_start_from_0.sort();
         let dfs_expected_result_start_from_0 = vec![0, 1, 2, 5];
         assert_eq!(dfs_result_start_from_0, dfs_expected_result_start_from_0);
-        let mut dfs_result_start_from_4 = g.dfs(4).clone();
+        let mut dfs_result_start_from_4 = TEST_GRAPH.dfs(4).clone();
         dfs_result_start_from_4.sort();
         let dfs_expected_result_start_from_4 = vec![3, 4];
         assert_eq!(dfs_result_start_from_4, dfs_expected_result_start_from_4);
