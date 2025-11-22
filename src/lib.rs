@@ -209,6 +209,18 @@ impl fmt::Display for Graph<u32> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use once_cell::sync::Lazy;
+
+    static TEST_GRAPH: Lazy<Graph<()>> = Lazy::new(|| {
+        Graph::new(vec![
+            vec![(1, ()), (2, ()), (5, ())],
+            vec![(0, ()), (5, ())],
+            vec![(0, ())],
+            vec![(4, ())],
+            vec![(3, ())],
+            vec![(0, ())],
+        ])
+    });
 
     #[test]
     fn random_gen_weights_gr_zero() {
@@ -238,19 +250,11 @@ mod tests {
 
     #[test]
     fn basic_bfs_test() {
-        let g: Graph<()> = Graph::new(vec![
-            vec![(1, ()), (2, ()), (5, ())],
-            vec![(0, ()), (5, ())],
-            vec![(0, ())],
-            vec![(4, ())],
-            vec![(3, ())],
-            vec![(0, ())],
-        ]);
-        let mut bfs_result_start_from_0 = g.bfs(0).clone();
+        let mut bfs_result_start_from_0 = TEST_GRAPH.bfs(0).clone();
         bfs_result_start_from_0.sort();
         let bfs_expected_result_start_from_0 = vec![0, 1, 2, 5];
         assert_eq!(bfs_result_start_from_0, bfs_expected_result_start_from_0);
-        let mut bfs_result_start_from_4 = g.bfs(4).clone();
+        let mut bfs_result_start_from_4 = TEST_GRAPH.bfs(4).clone();
         bfs_result_start_from_4.sort();
         let bfs_expected_result_start_from_4 = vec![3, 4];
         assert_eq!(bfs_result_start_from_4, bfs_expected_result_start_from_4);
@@ -258,19 +262,11 @@ mod tests {
 
     #[test]
     fn basic_dfs_test() {
-        let g: Graph<()> = Graph::new(vec![
-            vec![(1, ()), (2, ()), (5, ())],
-            vec![(0, ()), (5, ())],
-            vec![(0, ())],
-            vec![(4, ())],
-            vec![(3, ())],
-            vec![(0, ())],
-        ]);
-        let mut dfs_result_start_from_0 = g.dfs(0).clone();
+        let mut dfs_result_start_from_0 = TEST_GRAPH.dfs(0).clone();
         dfs_result_start_from_0.sort();
         let dfs_expected_result_start_from_0 = vec![0, 1, 2, 5];
         assert_eq!(dfs_result_start_from_0, dfs_expected_result_start_from_0);
-        let mut dfs_result_start_from_4 = g.dfs(4).clone();
+        let mut dfs_result_start_from_4 = TEST_GRAPH.dfs(4).clone();
         dfs_result_start_from_4.sort();
         let dfs_expected_result_start_from_4 = vec![3, 4];
         assert_eq!(dfs_result_start_from_4, dfs_expected_result_start_from_4);
