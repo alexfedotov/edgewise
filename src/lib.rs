@@ -1,8 +1,9 @@
 use rand::{Rng, rngs::ThreadRng};
+use std::collections::{HashSet, VecDeque};
 use std::fmt;
 
 /// A graph represented as a vector of vectors, which
-/// itself models an adjacency list.
+/// models an adjacency list.
 ///
 /// The index of each element in the outer vector corresponds to a node.
 /// Each inner vector contains tuples `(n, w)` representing outgoing edges:
@@ -48,6 +49,26 @@ impl<W> Graph<W> {
             let x = u as u32; //safe as the number of nodes is capped by u32 anyway
             v.iter().map(move |(y, w)| (x, *y, w))
         })
+    }
+
+    pub fn bfs(&self) -> Vec<u32> {
+        let mut nodes_left_to_process: VecDeque<u32> = VecDeque::new();
+        let mut nodes_visited: HashSet<u32> = HashSet::new();
+        nodes_left_to_process.push_back(0);
+        nodes_visited.insert(0);
+        while !nodes_left_to_process.is_empty() {
+            if let Some(node_to_process) = nodes_left_to_process.pop_front() {
+                if let Some(neighbours_of_node) = self.graph.get(node_to_process as usize) {
+                    for &(n, _) in neighbours_of_node {
+                        if !nodes_visited.contains(&n) {
+                            nodes_visited.insert(n);
+                            nodes_left_to_process.push_back(n);
+                        }
+                    }
+                }
+            }
+        }
+        nodes_visited.into_iter().collect()
     }
 }
 
@@ -187,5 +208,21 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn basic_bfs_test() {
+        let g: Graph<()> = Graph::new(vec![
+            vec![(1, ()), (2, ()), (5, ())],
+            vec![(0, ()), (5, ())],
+            vec![(0, ())],
+            vec![(4, ())],
+            vec![(3, ())],
+            vec![(0, ())],
+        ]);
+        let mut bfs_result = g.bfs().clone();
+        bfs_result.sort();
+        let bfs_expected_result = vec![0, 1, 2, 5];
+        assert_eq!(bfs_result, bfs_expected_result);
     }
 }
