@@ -70,6 +70,10 @@ impl<W> Graph<W> {
         }
         nodes_visited.into_iter().collect()
     }
+
+    pub fn dfs(&self, _starting_node: u32) -> Vec<u32> {
+        vec![42]
+    }
 }
 
 #[allow(private_bounds)]
