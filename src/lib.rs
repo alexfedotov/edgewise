@@ -1,5 +1,5 @@
 use rand::{Rng, rngs::ThreadRng};
-use std::collections::{HashSet, VecDeque};
+use std::collections::VecDeque;
 use std::fmt;
 
 /// A graph represented as a vector of vectors, which
@@ -76,16 +76,19 @@ impl<W> Graph<W> {
 
     pub fn dfs(&self, starting_node: u32) -> Vec<u32> {
         let mut nodes_left_to_process: VecDeque<u32> = VecDeque::new();
-        let mut nodes_visited: HashSet<u32> = HashSet::new();
+        let mut nodes_visited_lookup: Vec<bool> = vec![false; self.graph.len()];
+        let mut nodes_visited: Vec<u32> = Vec::new();
         nodes_left_to_process.push_back(starting_node);
-        nodes_visited.insert(starting_node);
+        nodes_visited_lookup[starting_node as usize] = true;
+        nodes_visited.push(starting_node);
         while !nodes_left_to_process.is_empty() {
             let mut found_unvisited = false;
             if let Some(&node_to_process) = nodes_left_to_process.back() {
                 if let Some(neighbours_of_node) = self.graph.get(node_to_process as usize) {
                     for &(n, _) in neighbours_of_node {
-                        if !nodes_visited.contains(&n) {
-                            nodes_visited.insert(n);
+                        if !nodes_visited_lookup[n as usize] {
+                            nodes_visited_lookup[n as usize] = true;
+                            nodes_visited.push(n);
                             nodes_left_to_process.push_back(n);
                             found_unvisited = true;
                             break;
@@ -97,7 +100,7 @@ impl<W> Graph<W> {
                 }
             }
         }
-        nodes_visited.into_iter().collect()
+        nodes_visited
     }
 }
 
