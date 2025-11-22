@@ -1,10 +1,9 @@
 use rand::{Rng, rngs::ThreadRng};
-use std::collections::HashSet;
-use std::collections::VecDeque;
+use std::collections::{HashSet, VecDeque};
 use std::fmt;
 
 /// A graph represented as a vector of vectors, which
-/// itself models an adjacency list.
+/// models an adjacency list.
 ///
 /// The index of each element in the outer vector corresponds to a node.
 /// Each inner vector contains tuples `(n, w)` representing outgoing edges:
@@ -209,5 +208,21 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn basic_bfs_test() {
+        let g: Graph<()> = Graph::new(vec![
+            vec![(1, ()), (2, ()), (5, ())],
+            vec![(0, ()), (5, ())],
+            vec![(0, ())],
+            vec![(4, ())],
+            vec![(3, ())],
+            vec![(0, ())],
+        ]);
+        let mut bfs_result = g.bfs().clone();
+        bfs_result.sort();
+        let bfs_expected_result = vec![0, 1, 2, 5];
+        assert_eq!(bfs_result, bfs_expected_result);
     }
 }
