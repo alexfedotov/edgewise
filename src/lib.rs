@@ -255,4 +255,34 @@ mod tests {
         let bfs_expected_result_start_from_4 = vec![3, 4];
         assert_eq!(bfs_result_start_from_4, bfs_expected_result_start_from_4);
     }
+
+    #[test]
+    fn basic_dfs_test() {
+        let g: Graph<()> = Graph::new(vec![
+            vec![(1, ()), (2, ()), (5, ())],
+            vec![(0, ()), (5, ())],
+            vec![(0, ())],
+            vec![(4, ())],
+            vec![(3, ())],
+            vec![(0, ())],
+        ]);
+        let mut dfs_result_start_from_0 = g.dfs(0).clone();
+        dfs_result_start_from_0.sort();
+        let dfs_expected_result_start_from_0 = vec![0, 1, 2, 5];
+        assert_eq!(dfs_result_start_from_0, dfs_expected_result_start_from_0);
+        let mut dfs_result_start_from_4 = g.dfs(4).clone();
+        dfs_result_start_from_4.sort();
+        let dfs_expected_result_start_from_4 = vec![3, 4];
+        assert_eq!(dfs_result_start_from_4, dfs_expected_result_start_from_4);
+    }
+
+    #[test]
+    fn bfs_dfs_equal_test() {
+        let g: Graph<u32> = Graph::random_graph(20, 0.5, true, true);
+        let mut bfs_result = g.bfs(0);
+        bfs_result.sort();
+        let mut dfs_result = g.dfs(0);
+        dfs_result.sort();
+        assert_eq!(bfs_result, dfs_result);
+    }
 }
