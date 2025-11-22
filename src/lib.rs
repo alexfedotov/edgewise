@@ -71,8 +71,30 @@ impl<W> Graph<W> {
         nodes_visited.into_iter().collect()
     }
 
-    pub fn dfs(&self, _starting_node: u32) -> Vec<u32> {
-        vec![42]
+    pub fn dfs(&self, starting_node: u32) -> Vec<u32> {
+        let mut nodes_left_to_process: VecDeque<u32> = VecDeque::new();
+        let mut nodes_visited: HashSet<u32> = HashSet::new();
+        nodes_left_to_process.push_back(starting_node);
+        nodes_visited.insert(starting_node);
+        while !nodes_left_to_process.is_empty() {
+            let mut found_unvisited = false;
+            if let Some(&node_to_process) = nodes_left_to_process.back() {
+                if let Some(neighbours_of_node) = self.graph.get(node_to_process as usize) {
+                    for &(n, _) in neighbours_of_node {
+                        if !nodes_visited.contains(&n) {
+                            nodes_visited.insert(n);
+                            nodes_left_to_process.push_back(n);
+                            found_unvisited = true;
+                            break;
+                        }
+                    }
+                    if !found_unvisited {
+                        nodes_left_to_process.pop_back();
+                    }
+                }
+            }
+        }
+        nodes_visited.into_iter().collect()
     }
 }
 
