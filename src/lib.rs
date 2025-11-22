@@ -220,9 +220,13 @@ mod tests {
             vec![(3, ())],
             vec![(0, ())],
         ]);
-        let mut bfs_result = g.bfs(0).clone();
-        bfs_result.sort();
-        let bfs_expected_result = vec![0, 1, 2, 5];
-        assert_eq!(bfs_result, bfs_expected_result);
+        let mut bfs_result_start_from_0 = g.bfs(0).clone();
+        bfs_result_start_from_0.sort();
+        let bfs_expected_result_start_from_0 = vec![0, 1, 2, 5];
+        assert_eq!(bfs_result_start_from_0, bfs_expected_result_start_from_0);
+        let mut bfs_result_start_from_4 = g.bfs(4).clone();
+        bfs_result_start_from_4.sort();
+        let bfs_expected_result_start_from_4 = vec![3, 4];
+        assert_eq!(bfs_result_start_from_4, bfs_expected_result_start_from_4);
     }
 }
