@@ -1,4 +1,6 @@
 use rand::{Rng, rngs::ThreadRng};
+use std::collections::HashSet;
+use std::collections::VecDeque;
 use std::fmt;
 
 /// A graph represented as a vector of vectors, which
@@ -51,18 +53,23 @@ impl<W> Graph<W> {
     }
 
     pub fn bfs(&self) -> Vec<u32> {
-        // Create an empty queue
-        // Create an empty set visited
-        // Add start to the queue
-        // Add start to visited
-        // While the queue is not empty:
-        //     Remove the front element and call it u
-        //     For each neighbor v of u in the graph:
-        //         If v is not in visited:
-        //             Add v to visited
-        //             Enqueue v
-        // Return visited (these are all reachable nodes)
-        vec![42]
+        let mut nodes_left_to_process: VecDeque<u32> = VecDeque::new();
+        let mut nodes_visited: HashSet<u32> = HashSet::new();
+        nodes_left_to_process.push_back(0);
+        nodes_visited.insert(0);
+        while !nodes_left_to_process.is_empty() {
+            if let Some(node_to_process) = nodes_left_to_process.pop_front() {
+                if let Some(neighbours_of_node) = self.graph.get(node_to_process as usize) {
+                    for &(n, _) in neighbours_of_node {
+                        if !nodes_visited.contains(&n) {
+                            nodes_visited.insert(n);
+                            nodes_left_to_process.push_back(n);
+                        }
+                    }
+                }
+            }
+        }
+        nodes_visited.into_iter().collect()
     }
 }
 
