@@ -133,6 +133,38 @@ impl<W: InsertEdge> Graph<W> {
     }
 }
 
+impl Graph<u32> {
+    pub fn dijkstra(&self, starting_node: u32) -> Vec<Option<u32>> {
+        let mut nodes_distance: Vec<Option<u32>> = vec![None; self.graph.len()];
+        let mut nodes_visited: Vec<bool> = vec![false; self.graph.len()];
+        nodes_distance[starting_node as usize] = Some(0);
+        loop {
+            if let Some((current_node, current_distance)) = (0..nodes_visited.len())
+                .filter(|&i| !nodes_visited[i])
+                .filter_map(|i| nodes_distance[i].map(|d| (i, d)))
+                .min_by_key(|&(_, d)| d)
+            {
+                if let Some(neighbors) = self.graph.get(current_node as usize) {
+                    for &(neighbor_node, neighbor_weight) in neighbors {
+                        let new_distance = current_distance + neighbor_weight;
+                        if let Some(neighbor_distance) = nodes_distance[neighbor_node as usize] {
+                            if new_distance < neighbor_distance {
+                                nodes_distance[neighbor_node as usize] = Some(new_distance)
+                            }
+                        } else {
+                            nodes_distance[neighbor_node as usize] = Some(new_distance)
+                        }
+                    }
+                }
+                nodes_visited[current_node as usize] = true
+            } else {
+                break;
+            }
+        }
+        nodes_distance
+    }
+}
+
 trait InsertEdge: Sized {
     fn insert_edge<'a>(
         g: &'a mut Graph<Self>,
