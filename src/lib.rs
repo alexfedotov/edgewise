@@ -52,7 +52,7 @@ impl<W> Graph<W> {
     }
 
     pub fn bfs(&self, starting_node: u32) -> Vec<u32> {
-        if (starting_node as usize) > self.graph.len() {
+        if (starting_node as usize) >= self.graph.len() {
             panic!("Node {starting_node} does not exist in the graph.")
         }
         let mut nodes_left_to_process: VecDeque<u32> = VecDeque::new();
@@ -78,7 +78,7 @@ impl<W> Graph<W> {
     }
 
     pub fn dfs(&self, starting_node: u32) -> Vec<u32> {
-        if (starting_node as usize) > self.graph.len() {
+        if (starting_node as usize) >= self.graph.len() {
             panic!("Node {starting_node} does not exist in the graph.")
         }
         let mut nodes_left_to_process: VecDeque<u32> = VecDeque::new();
@@ -112,19 +112,19 @@ impl<W> Graph<W> {
 
 #[allow(private_bounds)]
 impl<W: InsertEdge> Graph<W> {
-    fn insert_edge(&mut self, rng: &mut ThreadRng, i: u32, j: u32, is_directed: bool) -> &mut Self {
-        W::insert_edge(self, rng, i, j, is_directed)
+    fn insert_edge(&mut self, rng: &mut ThreadRng, i: u32, j: u32, is_directed: bool) {
+        W::insert_edge(self, rng, i, j, is_directed);
     }
 
     pub fn random_graph(num_nodes: u32, probability: f64, is_directed: bool) -> Self {
         let mut v: Vec<Vec<(u32, W)>> = Vec::new();
         v.resize_with(num_nodes as usize, Vec::new);
         let mut graph = Graph::new(v);
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         for i in 0..num_nodes {
             let z = if is_directed { 0 } else { i + 1 };
             for j in z..num_nodes {
-                let r: f64 = rng.r#gen();
+                let r: f64 = rng.random();
                 if r < probability {
                     graph.insert_edge(&mut rng, i, j, is_directed);
                 }
@@ -136,7 +136,7 @@ impl<W: InsertEdge> Graph<W> {
 
 impl Graph<u32> {
     pub fn dijkstra(&self, starting_node: u32) -> Vec<Option<u32>> {
-        if (starting_node as usize) > self.graph.len() {
+        if (starting_node as usize) >= self.graph.len() {
             panic!("Node {starting_node} does not exist in the graph.")
         }
         let mut nodes_distance: Vec<Option<u32>> = vec![None; self.graph.len()];
@@ -176,23 +176,11 @@ impl Graph<u32> {
 }
 
 trait InsertEdge: Sized {
-    fn insert_edge<'a>(
-        g: &'a mut Graph<Self>,
-        rng: &mut ThreadRng,
-        i: u32,
-        j: u32,
-        is_directed: bool,
-    ) -> &'a mut Graph<Self>;
+    fn insert_edge(g: &mut Graph<Self>, rng: &mut ThreadRng, i: u32, j: u32, is_directed: bool);
 }
 
 impl InsertEdge for () {
-    fn insert_edge<'a>(
-        g: &'a mut Graph<()>,
-        _rng: &mut ThreadRng,
-        i: u32,
-        j: u32,
-        is_directed: bool,
-    ) -> &'a mut Graph<()> {
+    fn insert_edge(g: &mut Graph<()>, _rng: &mut ThreadRng, i: u32, j: u32, is_directed: bool) {
         let u = g
             .graph
             .get_mut(i as usize)
@@ -205,19 +193,12 @@ impl InsertEdge for () {
                 .expect(&format!("Node {j} is out of bounds"));
             v.push((i, ()));
         }
-        g
     }
 }
 
 impl InsertEdge for u32 {
-    fn insert_edge<'a>(
-        g: &'a mut Graph<u32>,
-        rng: &mut ThreadRng,
-        i: u32,
-        j: u32,
-        is_directed: bool,
-    ) -> &'a mut Graph<u32> {
-        let w: u32 = rng.gen_range(1..=10);
+    fn insert_edge(g: &mut Graph<u32>, rng: &mut ThreadRng, i: u32, j: u32, is_directed: bool) {
+        let w: u32 = rng.random_range(1..=10);
         let u = g
             .graph
             .get_mut(i as usize)
@@ -230,7 +211,6 @@ impl InsertEdge for u32 {
                 .expect(&format!("Node {j} is out of bounds"));
             v.push((i, w));
         }
-        g
     }
 }
 
