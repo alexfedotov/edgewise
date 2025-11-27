@@ -116,12 +116,7 @@ impl<W: InsertEdge> Graph<W> {
         W::insert_edge(self, rng, i, j, is_directed)
     }
 
-    pub fn random_graph(
-        num_nodes: u32,
-        probability: f64,
-        is_directed: bool,
-        _is_weighted: bool,
-    ) -> Self {
+    pub fn random_graph(num_nodes: u32, probability: f64, is_directed: bool) -> Self {
         let mut v: Vec<Vec<(u32, W)>> = Vec::new();
         v.resize_with(num_nodes as usize, Vec::new);
         let mut graph = Graph::new(v);
@@ -156,7 +151,8 @@ impl Graph<u32> {
                 if let Some(neighbors) = self.graph.get(current_node as usize) {
                     for &(neighbor_node, neighbor_weight) in neighbors {
                         if let Some(new_distance) = current_distance.checked_add(neighbor_weight) {
-                            if let Some(neighbor_distance) = nodes_distance[neighbor_node as usize] {
+                            if let Some(neighbor_distance) = nodes_distance[neighbor_node as usize]
+                            {
                                 if new_distance < neighbor_distance {
                                     nodes_distance[neighbor_node as usize] = Some(new_distance)
                                 }
@@ -164,7 +160,9 @@ impl Graph<u32> {
                                 nodes_distance[neighbor_node as usize] = Some(new_distance)
                             }
                         } else {
-                            panic!("Computation of new distance for node {current_node} causes u32 overflow.")
+                            panic!(
+                                "Computation of new distance for node {current_node} causes u32 overflow."
+                            )
                         }
                     }
                 }
@@ -274,7 +272,7 @@ mod tests {
 
     #[test]
     fn random_gen_weights_gr_zero() {
-        let g: Graph<u32> = Graph::random_graph(10, 0.5, true, true);
+        let g: Graph<u32> = Graph::random_graph(10, 0.5, true);
         for (_, _, w) in g.edges() {
             assert!(*w > 0)
         }
@@ -282,7 +280,7 @@ mod tests {
 
     #[test]
     fn random_gen_undirected_weigh_simmetry() {
-        let g: Graph<u32> = Graph::random_graph(10, 0.5, false, true);
+        let g: Graph<u32> = Graph::random_graph(10, 0.5, false);
         let edges: Vec<_> = g.edges().collect();
         for &(u, v, w) in &edges {
             if let Some(&(_, _, w1)) = edges.iter().find(|&&(u1, v1, _)| u1 == v && v1 == u) {
@@ -324,7 +322,7 @@ mod tests {
 
     #[test]
     fn bfs_dfs_equal_test() {
-        let g: Graph<u32> = Graph::random_graph(20, 0.5, true, true);
+        let g: Graph<u32> = Graph::random_graph(20, 0.5, true);
         let mut bfs_result = g.bfs(0);
         bfs_result.sort();
         let mut dfs_result = g.dfs(0);
