@@ -155,13 +155,16 @@ impl Graph<u32> {
             {
                 if let Some(neighbors) = self.graph.get(current_node as usize) {
                     for &(neighbor_node, neighbor_weight) in neighbors {
-                        let new_distance = current_distance + neighbor_weight;
-                        if let Some(neighbor_distance) = nodes_distance[neighbor_node as usize] {
-                            if new_distance < neighbor_distance {
+                        if let Some(new_distance) = current_distance.checked_add(neighbor_weight) {
+                            if let Some(neighbor_distance) = nodes_distance[neighbor_node as usize] {
+                                if new_distance < neighbor_distance {
+                                    nodes_distance[neighbor_node as usize] = Some(new_distance)
+                                }
+                            } else {
                                 nodes_distance[neighbor_node as usize] = Some(new_distance)
                             }
                         } else {
-                            nodes_distance[neighbor_node as usize] = Some(new_distance)
+                            panic!("Computation of new distance for node {current_node} causes u32 overflow.")
                         }
                     }
                 }
