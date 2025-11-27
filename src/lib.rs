@@ -52,6 +52,9 @@ impl<W> Graph<W> {
     }
 
     pub fn bfs(&self, starting_node: u32) -> Vec<u32> {
+        if (starting_node as usize) > self.graph.len() {
+            panic!("Node {starting_node} does not exist in the graph.")
+        }
         let mut nodes_left_to_process: VecDeque<u32> = VecDeque::new();
         let mut nodes_visited_lookup: Vec<bool> = vec![false; self.graph.len()];
         let mut nodes_visited: Vec<u32> = Vec::new();
@@ -75,6 +78,9 @@ impl<W> Graph<W> {
     }
 
     pub fn dfs(&self, starting_node: u32) -> Vec<u32> {
+        if (starting_node as usize) > self.graph.len() {
+            panic!("Node {starting_node} does not exist in the graph.")
+        }
         let mut nodes_left_to_process: VecDeque<u32> = VecDeque::new();
         let mut nodes_visited_lookup: Vec<bool> = vec![false; self.graph.len()];
         let mut nodes_visited: Vec<u32> = Vec::new();
@@ -135,6 +141,9 @@ impl<W: InsertEdge> Graph<W> {
 
 impl Graph<u32> {
     pub fn dijkstra(&self, starting_node: u32) -> Vec<Option<u32>> {
+        if (starting_node as usize) > self.graph.len() {
+            panic!("Node {starting_node} does not exist in the graph.")
+        }
         let mut nodes_distance: Vec<Option<u32>> = vec![None; self.graph.len()];
         let mut nodes_visited: Vec<bool> = vec![false; self.graph.len()];
         nodes_distance[starting_node as usize] = Some(0);
