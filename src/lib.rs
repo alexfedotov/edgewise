@@ -51,9 +51,10 @@ impl<W> Graph<W> {
         })
     }
 
-    pub fn bfs(&self, starting_node: u32) -> Vec<u32> {
+    pub fn bfs(&self, starting_node: u32) -> Option<Vec<u32>> {
         if (starting_node as usize) >= self.graph.len() {
-            panic!("Node {starting_node} does not exist in the graph.")
+            // Starting node does not exist, so we return a None
+            return None;
         }
         let mut nodes_left_to_process: VecDeque<u32> = VecDeque::new();
         let mut nodes_visited_lookup: Vec<bool> = vec![false; self.graph.len()];
@@ -74,12 +75,13 @@ impl<W> Graph<W> {
                 }
             }
         }
-        nodes_visited
+        Some(nodes_visited)
     }
 
-    pub fn dfs(&self, starting_node: u32) -> Vec<u32> {
+    pub fn dfs(&self, starting_node: u32) -> Option<Vec<u32>> {
         if (starting_node as usize) >= self.graph.len() {
-            panic!("Node {starting_node} does not exist in the graph.")
+            // Starting node does not exist, so we return a None
+            return None;
         }
         let mut nodes_left_to_process: VecDeque<u32> = VecDeque::new();
         let mut nodes_visited_lookup: Vec<bool> = vec![false; self.graph.len()];
@@ -106,7 +108,7 @@ impl<W> Graph<W> {
                 }
             }
         }
-        nodes_visited
+        Some(nodes_visited)
     }
 }
 
@@ -135,9 +137,10 @@ impl<W: InsertEdge> Graph<W> {
 }
 
 impl Graph<u32> {
-    pub fn dijkstra(&self, starting_node: u32) -> Vec<Option<u32>> {
+    pub fn dijkstra(&self, starting_node: u32) -> Option<Vec<Option<u32>>> {
         if (starting_node as usize) >= self.graph.len() {
-            panic!("Node {starting_node} does not exist in the graph.")
+            // Starting node does not exist, so we return a None
+            return None;
         }
         let mut nodes_distance: Vec<Option<u32>> = vec![None; self.graph.len()];
         let mut nodes_visited: Vec<bool> = vec![false; self.graph.len()];
@@ -171,7 +174,7 @@ impl Graph<u32> {
                 break;
             }
         }
-        nodes_distance
+        Some(nodes_distance)
     }
 }
 
@@ -278,11 +281,15 @@ mod tests {
 
     #[test]
     fn basic_bfs_test() {
-        let mut bfs_result_start_from_0 = TEST_GRAPH.bfs(0).clone();
+        let mut bfs_result_start_from_0 = TEST_GRAPH
+            .bfs(0)
+            .expect("bfs(0) returned None unexpectedly");
         bfs_result_start_from_0.sort();
         let bfs_expected_result_start_from_0 = vec![0, 1, 2, 5];
         assert_eq!(bfs_result_start_from_0, bfs_expected_result_start_from_0);
-        let mut bfs_result_start_from_4 = TEST_GRAPH.bfs(4).clone();
+        let mut bfs_result_start_from_4 = TEST_GRAPH
+            .bfs(4)
+            .expect("bfs(4) returned None unexpectedly");
         bfs_result_start_from_4.sort();
         let bfs_expected_result_start_from_4 = vec![3, 4];
         assert_eq!(bfs_result_start_from_4, bfs_expected_result_start_from_4);
@@ -290,11 +297,15 @@ mod tests {
 
     #[test]
     fn basic_dfs_test() {
-        let mut dfs_result_start_from_0 = TEST_GRAPH.dfs(0).clone();
+        let mut dfs_result_start_from_0 = TEST_GRAPH
+            .dfs(0)
+            .expect("dfs(0) returned None unexpectedly");
         dfs_result_start_from_0.sort();
         let dfs_expected_result_start_from_0 = vec![0, 1, 2, 5];
         assert_eq!(dfs_result_start_from_0, dfs_expected_result_start_from_0);
-        let mut dfs_result_start_from_4 = TEST_GRAPH.dfs(4).clone();
+        let mut dfs_result_start_from_4 = TEST_GRAPH
+            .dfs(4)
+            .expect("dfs(4) returned None unexpectedly");
         dfs_result_start_from_4.sort();
         let dfs_expected_result_start_from_4 = vec![3, 4];
         assert_eq!(dfs_result_start_from_4, dfs_expected_result_start_from_4);
@@ -303,9 +314,9 @@ mod tests {
     #[test]
     fn bfs_dfs_equal_test() {
         let g: Graph<u32> = Graph::random_graph(20, 0.5, true);
-        let mut bfs_result = g.bfs(0);
+        let mut bfs_result = g.bfs(0).expect("bfs(0) returned None unexpectedly");
         bfs_result.sort();
-        let mut dfs_result = g.dfs(0);
+        let mut dfs_result = g.dfs(0).expect("bfs(0) returned None unexpectedly");
         dfs_result.sort();
         assert_eq!(bfs_result, dfs_result);
     }
