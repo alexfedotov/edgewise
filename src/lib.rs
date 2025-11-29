@@ -163,9 +163,8 @@ impl Graph<u32> {
                                 nodes_distance[neighbor_node as usize] = Some(new_distance)
                             }
                         } else {
-                            panic!(
-                                "Computation of new distance for node {current_node} causes u32 overflow."
-                            )
+                            // New distance for the current_node causes an overflow.
+                            return None;
                         }
                     }
                 }
