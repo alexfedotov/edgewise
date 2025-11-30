@@ -3,9 +3,15 @@ use std::collections::VecDeque;
 use std::fmt;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-struct Weighted(u32);
+pub struct Weighted(u32);
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-struct Unweighted(());
+pub struct Unweighted(());
+
+#[derive(Debug, PartialEq, PartialOrd)]
+pub enum GraphError {
+    OutOfBoundsNode(String),
+    OutOfBoundsDistance(String),
+}
 
 /// A graph represented as a vector of vectors, which
 /// models an adjacency list.
@@ -56,10 +62,11 @@ impl<W> Graph<W> {
         })
     }
 
-    pub fn bfs(&self, starting_node: u32) -> Option<Vec<u32>> {
+    pub fn bfs(&self, starting_node: u32) -> Result<Vec<u32>, GraphError> {
         if (starting_node as usize) >= self.graph.len() {
-            // Starting node does not exist, so we return a None
-            return None;
+            return Err(GraphError::OutOfBoundsNode(format!(
+                "Starting node {starting_node} is out of bounds."
+            )));
         }
         let mut nodes_left_to_process: VecDeque<u32> = VecDeque::new();
         let mut nodes_visited_lookup: Vec<bool> = vec![false; self.graph.len()];
@@ -80,13 +87,14 @@ impl<W> Graph<W> {
                 }
             }
         }
-        Some(nodes_visited)
+        Ok(nodes_visited)
     }
 
-    pub fn dfs(&self, starting_node: u32) -> Option<Vec<u32>> {
+    pub fn dfs(&self, starting_node: u32) -> Result<Vec<u32>, GraphError> {
         if (starting_node as usize) >= self.graph.len() {
-            // Starting node does not exist, so we return a None
-            return None;
+            return Err(GraphError::OutOfBoundsNode(format!(
+                "Starting node {starting_node} is out of bounds."
+            )));
         }
         let mut nodes_left_to_process: VecDeque<u32> = VecDeque::new();
         let mut nodes_visited_lookup: Vec<bool> = vec![false; self.graph.len()];
@@ -113,7 +121,7 @@ impl<W> Graph<W> {
                 }
             }
         }
-        Some(nodes_visited)
+        Ok(nodes_visited)
     }
 }
 
@@ -142,10 +150,11 @@ impl<W: InsertEdge> Graph<W> {
 }
 
 impl Graph<Weighted> {
-    pub fn dijkstra(&self, starting_node: u32) -> Option<Vec<Option<u32>>> {
+    pub fn dijkstra(&self, starting_node: u32) -> Result<Vec<Option<u32>>, GraphError> {
         if (starting_node as usize) >= self.graph.len() {
-            // Starting node does not exist, so we return a None
-            return None;
+            return Err(GraphError::OutOfBoundsNode(format!(
+                "Starting node {starting_node} is out of bounds."
+            )));
         }
         let mut nodes_distance: Vec<Option<u32>> = vec![None; self.graph.len()];
         let mut nodes_visited: Vec<bool> = vec![false; self.graph.len()];
@@ -170,7 +179,9 @@ impl Graph<Weighted> {
                             }
                         } else {
                             // New distance for the current_node causes an overflow.
-                            return None;
+                            return Err(GraphError::OutOfBoundsDistance(format!(
+                                "New distance for the current node is an overflow"
+                            )));
                         }
                     }
                 }
@@ -179,7 +190,7 @@ impl Graph<Weighted> {
                 break;
             }
         }
-        Some(nodes_distance)
+        Ok(nodes_distance)
     }
 }
 
@@ -304,7 +315,7 @@ mod tests {
     }
 
     #[test]
-    fn random_gen_undirected_weigh_simmetry() {
+    fn random_gen_undirected_weight_simmetry() {
         let g: Graph<Weighted> = Graph::random_graph(10, 0.5, false);
         let edges: Vec<_> = g.edges().collect();
         for &(u, v, w) in &edges {
@@ -327,36 +338,42 @@ mod tests {
     fn basic_bfs_test() {
         let mut bfs_result_start_from_0 = TEST_GRAPH_UNWEIGHTED
             .bfs(0)
-            .expect("bfs(0) returned None unexpectedly");
+            .expect("bfs(0) resulted in an error unexpectedly");
         bfs_result_start_from_0.sort();
         let bfs_expected_result_start_from_0 = vec![0, 1, 2, 5];
         assert_eq!(bfs_result_start_from_0, bfs_expected_result_start_from_0);
         let mut bfs_result_start_from_4 = TEST_GRAPH_UNWEIGHTED
             .bfs(4)
-            .expect("bfs(4) returned None unexpectedly");
+            .expect("bfs(4) resulted in an error unexpectedly");
         bfs_result_start_from_4.sort();
         let bfs_expected_result_start_from_4 = vec![3, 4];
         assert_eq!(bfs_result_start_from_4, bfs_expected_result_start_from_4);
         let bfs_result_start_from_6 = TEST_GRAPH_UNWEIGHTED.bfs(6);
-        assert_eq!(bfs_result_start_from_6, None);
+        assert!(matches!(
+            bfs_result_start_from_6,
+            Err(GraphError::OutOfBoundsNode(_))
+        ));
     }
 
     #[test]
     fn basic_dfs_test() {
         let mut dfs_result_start_from_0 = TEST_GRAPH_UNWEIGHTED
             .dfs(0)
-            .expect("dfs(0) returned None unexpectedly");
+            .expect("dfs(0) resulted in an error unexpectedly");
         dfs_result_start_from_0.sort();
         let dfs_expected_result_start_from_0 = vec![0, 1, 2, 5];
         assert_eq!(dfs_result_start_from_0, dfs_expected_result_start_from_0);
         let mut dfs_result_start_from_4 = TEST_GRAPH_UNWEIGHTED
             .dfs(4)
-            .expect("dfs(4) returned None unexpectedly");
+            .expect("dfs(4) resulted in an error unexpectedly");
         dfs_result_start_from_4.sort();
         let dfs_expected_result_start_from_4 = vec![3, 4];
         assert_eq!(dfs_result_start_from_4, dfs_expected_result_start_from_4);
         let dfs_result_start_from_6 = TEST_GRAPH_UNWEIGHTED.dfs(6);
-        assert_eq!(dfs_result_start_from_6, None);
+        assert!(matches!(
+            dfs_result_start_from_6,
+            Err(GraphError::OutOfBoundsNode(_))
+        ));
     }
 
     #[test]
@@ -420,6 +437,9 @@ mod tests {
             dijkstra_expected_result_start_from_10
         );
         let dijkstra_result_start_from_15 = TEST_GRAPH_WEIGHTED.dijkstra(15);
-        assert_eq!(dijkstra_result_start_from_15, None);
+        assert!(matches!(
+            dijkstra_result_start_from_15,
+            Err(GraphError::OutOfBoundsNode(_))
+        ));
     }
 }
