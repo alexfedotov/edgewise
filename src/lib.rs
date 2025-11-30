@@ -7,12 +7,12 @@ pub struct Weighted(pub u32);
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Unweighted(pub ());
 
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Debug, PartialEq)]
 pub enum GraphError {
     OutOfBoundsNode {
         node: u32,
     },
-    DistanveOverflow {
+    DistanceOverflow {
         node_from: u32,
         node_to: u32,
         current_distance: u32,
@@ -186,7 +186,7 @@ impl Graph<Weighted> {
                         }
                     } else {
                         // New distance for the current_node causes an overflow.
-                        return Err(GraphError::DistanveOverflow {
+                        return Err(GraphError::DistanceOverflow {
                             node_from: current_node as u32,
                             node_to: neighbor_node,
                             current_distance,
