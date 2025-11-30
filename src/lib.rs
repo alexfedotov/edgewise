@@ -3,9 +3,9 @@ use std::collections::VecDeque;
 use std::fmt;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Weighted(u32);
+pub struct Weighted(pub u32);
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Unweighted(());
+pub struct Unweighted(pub ());
 
 #[derive(Debug, PartialEq, PartialOrd)]
 pub enum GraphError {
@@ -13,30 +13,35 @@ pub enum GraphError {
     OutOfBoundsDistance(String),
 }
 
-/// A graph represented as a vector of vectors, which
-/// models an adjacency list.
+/// A graph is represented as an adjacency list, which is internally
+/// modelled as a vector of vectors `Vec<Vec<(u32, W)>>`.
+/// Each index corresponds to a node, and each inner `Vec` stores
+/// edges of the form `(target_node, weight)`. The weight type `W`
+/// is user-defined:
+/// - use [`Weighted`] for weighted graphs,
+/// - use [`Unweighted`] for unweighted graphs.
 ///
-/// The index of each element in the outer vector corresponds to a node.
-/// Each inner vector contains tuples `(n, w)` representing outgoing edges:
-/// `n` is the target node, and `w` is the edge weight. To model an
-/// unweighted graph, use the unit type `()` as the weight.
+/// Note: node identifiers are always `u32`, and must be valid indices
+/// into the adjacency list.
 ///
 /// # Examples
+///
+/// ## Weighted directed graph
 /// ```rust
-///
-/// use edgewise::Graph;
-///
-/// // Weighted directed graph
-/// let weighted: Graph<u32> = Graph::new(vec![
-///         vec![(1, 1), (2, 3)], // edges from node 0
-///         vec![(2, 0)],         // edges from node 1
-///         vec![(0, 5)],         // edges from node 2
+/// use edgewise::{Graph, Weighted};
+/// let weighted: Graph<Weighted> = Graph::new(vec![
+///         vec![(1, Weighted(1)), (2, Weighted(3))], // edges from node 0
+///         vec![(2, Weighted(0))],     // edges from node 1
+///         vec![(0, Weighted(5))],     // edges from node 2
 ///     ]);
+/// ```
 ///
-/// // Unweighted undirected graph
-/// let unweighted: Graph<()> = Graph::new(vec![
-///         vec![(1, ())],        // edge 0 -> 1
-///         vec![(0, ())],        // edge 1 -> 0
+/// ## Unweighted undirected graph
+/// ```rust
+/// use edgewise::{Graph, Unweighted};
+/// let unweighted: Graph<Unweighted> = Graph::new(vec![
+///         vec![(1, Unweighted(()))],  // edge 0 -> 1
+///         vec![(0, Unweighted(()))],  // edge 1 -> 0
 ///     ]);
 /// ```
 #[derive(Debug, PartialEq, Eq)]
