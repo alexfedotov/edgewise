@@ -74,15 +74,13 @@ impl<W> Graph<W> {
         nodes_left_to_process.push_back(starting_node);
         nodes_visited_lookup[starting_node as usize] = true;
         nodes_visited.push(starting_node);
-        while !nodes_left_to_process.is_empty() {
-            if let Some(node_to_process) = nodes_left_to_process.pop_front() {
-                if let Some(neighbours_of_node) = self.graph.get(node_to_process as usize) {
-                    for &(n, _) in neighbours_of_node {
-                        if !nodes_visited_lookup[n as usize] {
-                            nodes_visited_lookup[n as usize] = true;
-                            nodes_visited.push(n);
-                            nodes_left_to_process.push_back(n);
-                        }
+        while let Some(node_to_process) = nodes_left_to_process.pop_front() {
+            if let Some(neighbours_of_node) = self.graph.get(node_to_process as usize) {
+                for &(n, _) in neighbours_of_node {
+                    if !nodes_visited_lookup[n as usize] {
+                        nodes_visited_lookup[n as usize] = true;
+                        nodes_visited.push(n);
+                        nodes_left_to_process.push_back(n);
                     }
                 }
             }
@@ -104,20 +102,20 @@ impl<W> Graph<W> {
         nodes_visited.push(starting_node);
         while !nodes_left_to_process.is_empty() {
             let mut found_unvisited = false;
-            if let Some(&node_to_process) = nodes_left_to_process.back() {
-                if let Some(neighbours_of_node) = self.graph.get(node_to_process as usize) {
-                    for &(n, _) in neighbours_of_node {
-                        if !nodes_visited_lookup[n as usize] {
-                            nodes_visited_lookup[n as usize] = true;
-                            nodes_visited.push(n);
-                            nodes_left_to_process.push_back(n);
-                            found_unvisited = true;
-                            break;
-                        }
+            if let Some(&node_to_process) = nodes_left_to_process.back()
+                && let Some(neighbours_of_node) = self.graph.get(node_to_process as usize)
+            {
+                for &(n, _) in neighbours_of_node {
+                    if !nodes_visited_lookup[n as usize] {
+                        nodes_visited_lookup[n as usize] = true;
+                        nodes_visited.push(n);
+                        nodes_left_to_process.push_back(n);
+                        found_unvisited = true;
+                        break;
                     }
-                    if !found_unvisited {
-                        nodes_left_to_process.pop_back();
-                    }
+                }
+                if !found_unvisited {
+                    nodes_left_to_process.pop_back();
                 }
             }
         }
@@ -159,36 +157,30 @@ impl Graph<Weighted> {
         let mut nodes_distance: Vec<Option<u32>> = vec![None; self.graph.len()];
         let mut nodes_visited: Vec<bool> = vec![false; self.graph.len()];
         nodes_distance[starting_node as usize] = Some(0);
-        loop {
-            if let Some((current_node, current_distance)) = (0..nodes_visited.len())
-                .filter(|&i| !nodes_visited[i])
-                .filter_map(|i| nodes_distance[i].map(|d| (i, d)))
-                .min_by_key(|&(_, d)| d)
-            {
-                if let Some(neighbors) = self.graph.get(current_node as usize) {
-                    for &(neighbor_node, neighbor_weight) in neighbors {
-                        if let Some(new_distance) = current_distance.checked_add(neighbor_weight.0)
-                        {
-                            if let Some(neighbor_distance) = nodes_distance[neighbor_node as usize]
-                            {
-                                if new_distance < neighbor_distance {
-                                    nodes_distance[neighbor_node as usize] = Some(new_distance)
-                                }
-                            } else {
+        while let Some((current_node, current_distance)) = (0..nodes_visited.len())
+            .filter(|&i| !nodes_visited[i])
+            .filter_map(|i| nodes_distance[i].map(|d| (i, d)))
+            .min_by_key(|&(_, d)| d)
+        {
+            if let Some(neighbors) = self.graph.get(current_node) {
+                for &(neighbor_node, neighbor_weight) in neighbors {
+                    if let Some(new_distance) = current_distance.checked_add(neighbor_weight.0) {
+                        if let Some(neighbor_distance) = nodes_distance[neighbor_node as usize] {
+                            if new_distance < neighbor_distance {
                                 nodes_distance[neighbor_node as usize] = Some(new_distance)
                             }
                         } else {
-                            // New distance for the current_node causes an overflow.
-                            return Err(GraphError::OutOfBoundsDistance(format!(
-                                "New distance for the current node is an overflow"
-                            )));
+                            nodes_distance[neighbor_node as usize] = Some(new_distance)
                         }
+                    } else {
+                        // New distance for the current_node causes an overflow.
+                        return Err(GraphError::OutOfBoundsDistance(
+                            "New distance for the current node is an overflow".to_string(),
+                        ));
                     }
                 }
-                nodes_visited[current_node as usize] = true
-            } else {
-                break;
             }
+            nodes_visited[current_node] = true
         }
         Ok(nodes_distance)
     }
@@ -209,13 +201,13 @@ impl InsertEdge for Unweighted {
         let u = g
             .graph
             .get_mut(i as usize)
-            .expect(&format!("Node {i} is out of bounds"));
+            .unwrap_or_else(|| panic!("Node {i} is out of bounds"));
         u.push((j, Unweighted(())));
         if !is_directed {
             let v = g
                 .graph
                 .get_mut(j as usize)
-                .expect(&format!("Node {j} is out of bounds"));
+                .unwrap_or_else(|| panic!("Node {j} is out of bounds"));
             v.push((i, Unweighted(())));
         }
     }
@@ -233,13 +225,13 @@ impl InsertEdge for Weighted {
         let u = g
             .graph
             .get_mut(i as usize)
-            .expect(&format!("Node {i} is out of bounds"));
+            .unwrap_or_else(|| panic!("Node {i} is out of bounds"));
         u.push((j, Weighted(w)));
         if !is_directed {
             let v = g
                 .graph
                 .get_mut(j as usize)
-                .expect(&format!("Node {j} is out of bounds"));
+                .unwrap_or_else(|| panic!("Node {j} is out of bounds"));
             v.push((i, Weighted(w)));
         }
     }
