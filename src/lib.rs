@@ -9,8 +9,15 @@ pub struct Unweighted(pub ());
 
 #[derive(Debug, PartialEq, PartialOrd)]
 pub enum GraphError {
-    OutOfBoundsNode(String),
-    OutOfBoundsDistance(String),
+    OutOfBoundsNode {
+        node: u32,
+    },
+    DistanveOverflow {
+        node_from: u32,
+        node_to: u32,
+        current_distance: u32,
+        edge_weight: u32,
+    },
 }
 
 /// A graph is represented as an adjacency list, which is internally
@@ -69,9 +76,9 @@ impl<W> Graph<W> {
 
     pub fn bfs(&self, starting_node: u32) -> Result<Vec<u32>, GraphError> {
         if (starting_node as usize) >= self.graph.len() {
-            return Err(GraphError::OutOfBoundsNode(format!(
-                "Starting node {starting_node} is out of bounds."
-            )));
+            return Err(GraphError::OutOfBoundsNode {
+                node: starting_node,
+            });
         }
         let mut nodes_left_to_process: VecDeque<u32> = VecDeque::new();
         let mut nodes_visited_lookup: Vec<bool> = vec![false; self.graph.len()];
@@ -95,9 +102,9 @@ impl<W> Graph<W> {
 
     pub fn dfs(&self, starting_node: u32) -> Result<Vec<u32>, GraphError> {
         if (starting_node as usize) >= self.graph.len() {
-            return Err(GraphError::OutOfBoundsNode(format!(
-                "Starting node {starting_node} is out of bounds."
-            )));
+            return Err(GraphError::OutOfBoundsNode {
+                node: starting_node,
+            });
         }
         let mut nodes_left_to_process: VecDeque<u32> = VecDeque::new();
         let mut nodes_visited_lookup: Vec<bool> = vec![false; self.graph.len()];
@@ -155,9 +162,9 @@ impl<W: InsertEdge> Graph<W> {
 impl Graph<Weighted> {
     pub fn dijkstra(&self, starting_node: u32) -> Result<Vec<Option<u32>>, GraphError> {
         if (starting_node as usize) >= self.graph.len() {
-            return Err(GraphError::OutOfBoundsNode(format!(
-                "Starting node {starting_node} is out of bounds."
-            )));
+            return Err(GraphError::OutOfBoundsNode {
+                node: starting_node,
+            });
         }
         let mut nodes_distance: Vec<Option<u32>> = vec![None; self.graph.len()];
         let mut nodes_visited: Vec<bool> = vec![false; self.graph.len()];
@@ -179,9 +186,12 @@ impl Graph<Weighted> {
                         }
                     } else {
                         // New distance for the current_node causes an overflow.
-                        return Err(GraphError::OutOfBoundsDistance(
-                            "New distance for the current node is an overflow".to_string(),
-                        ));
+                        return Err(GraphError::DistanveOverflow {
+                            node_from: current_node as u32,
+                            node_to: neighbor_node,
+                            current_distance,
+                            edge_weight: neighbor_weight.0,
+                        });
                     }
                 }
             }
@@ -348,7 +358,7 @@ mod tests {
         let bfs_result_start_from_6 = TEST_GRAPH_UNWEIGHTED.bfs(6);
         assert!(matches!(
             bfs_result_start_from_6,
-            Err(GraphError::OutOfBoundsNode(_))
+            Err(GraphError::OutOfBoundsNode { node: 6 })
         ));
     }
 
@@ -369,7 +379,7 @@ mod tests {
         let dfs_result_start_from_6 = TEST_GRAPH_UNWEIGHTED.dfs(6);
         assert!(matches!(
             dfs_result_start_from_6,
-            Err(GraphError::OutOfBoundsNode(_))
+            Err(GraphError::OutOfBoundsNode { node: 6 })
         ));
     }
 
@@ -436,7 +446,7 @@ mod tests {
         let dijkstra_result_start_from_15 = TEST_GRAPH_WEIGHTED.dijkstra(15);
         assert!(matches!(
             dijkstra_result_start_from_15,
-            Err(GraphError::OutOfBoundsNode(_))
+            Err(GraphError::OutOfBoundsNode { node: 15 })
         ));
     }
 }
