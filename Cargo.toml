@@ -2,6 +2,15 @@
 name = "edgewise"
 version = "0.1.0"
 edition = "2024"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/alexfedotov/edgewise"
+homepage = "https://github.com/alexfedotov/edgewise"
+description = "A simple graph library with BFS, DFS, Dijkstra, and random graph generation."
+documentation = "https://docs.rs/edgewise"
+keywords = ["graph", "algorithm", "bfs", "dfs", "dijkstra"]
+categories = ["data-structures", "algorithms"]
+exclude = [".github/", "test-data/", "docs/"]
 
 [dependencies]
 rand = "0.9"
